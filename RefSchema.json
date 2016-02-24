@@ -7,6 +7,9 @@
       "complexProp": { "$ref" : "#/definitions/OtherType" }
   },
   "definitions" : {
+    "MyType" : {
+      "$ref" : "#/definitions/OtherType"
+    },
     "OtherType" : {
       "type": "object",
       "properties" : {
