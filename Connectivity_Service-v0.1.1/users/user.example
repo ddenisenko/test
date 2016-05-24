@@ -1,0 +1,104 @@
+  {
+    "id": "123abc",
+    "username": "some_user_name",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@mycompany.com",
+    "company": "My Company LTD",
+    "phone": "5553605",
+    "firstTime": "true",
+    "organization": {
+      "name": "MuleSoft Inc",
+      "id": "f0c9b011-980e-4928-9430-e60e3a97c043",
+      "domain": "mulesoft-inc",
+      "isMaster": true
+    },
+    "memberOfOrganizations": [
+      {
+        "name": "MuleSoft Inc",
+        "id": "a8886ae1-ba56-40e9-9d6d-92fe4d12758a",
+        "parentName": null,
+        "parentId": null,
+        "isMaster": true
+      },
+      {
+        "name": "Api Platform",
+        "id": "ebed65fd-29f9-4638-b28d-5a1dabdc0a70",
+        "parentName": "MuleSoft Inc",
+        "parentId": "f0c9b011-980e-4928-9430-e60e3a97c043",
+        "isMaster": false
+      },
+      {
+        "name": "test",
+        "id": "d375849a-428f-4974-aaa1-e89a8ef96906",
+        "parentName": "MuleSoft Inc",
+        "parentId": "f0c9b011-980e-4928-9430-e60e3a97c043",
+        "isMaster": false
+      },
+      {
+        "name": "sub-org-level-2",
+        "id": "53d96000-2400-46d3-998b-78f4f0289d0d",
+        "parentName": "test",
+        "parentId": "d375849a-428f-4974-aaa1-e89a8ef96906",
+        "isMaster": false
+      },
+      {
+        "name": "suborg-test-3",
+        "id": "d76d7b83-8aa0-4b20-a689-3e7a7e1bcb58",
+        "parentName": "test",
+        "parentId": "d375849a-428f-4974-aaa1-e89a8ef96906",
+        "isMaster": false
+      },
+      {
+        "name": "suborg-level-4",
+        "id": "f192de1e-09d9-430e-884b-1b25cad8bbed",
+        "parentName": "suborg-test-3",
+        "parentId": "d76d7b83-8aa0-4b20-a689-3e7a7e1bcb58",
+        "isMaster": false
+      }
+    ],
+    "contributorOfOrganizations": [
+      {
+        "name": "MuleSoft Inc",
+        "id": "a8886ae1-ba56-40e9-9d6d-92fe4d12758a",
+        "parentName": null,
+        "parentId": null,
+        "isMaster": true
+      },
+      {
+        "name": "Api Platform",
+        "id": "ebed65fd-29f9-4638-b28d-5a1dabdc0a70",
+        "parentName": "MuleSoft Inc",
+        "parentId": "f0c9b011-980e-4928-9430-e60e3a97c043",
+        "isMaster": false
+      },
+      {
+        "name": "test",
+        "id": "d375849a-428f-4974-aaa1-e89a8ef96906",
+        "parentName": "MuleSoft Inc",
+        "parentId": "f0c9b011-980e-4928-9430-e60e3a97c043",
+        "isMaster": false
+      },
+      {
+        "name": "sub-org-level-2",
+        "id": "53d96000-2400-46d3-998b-78f4f0289d0d",
+        "parentName": "test",
+        "parentId": "d375849a-428f-4974-aaa1-e89a8ef96906",
+        "isMaster": false
+      },
+      {
+        "name": "suborg-test-3",
+        "id": "d76d7b83-8aa0-4b20-a689-3e7a7e1bcb58",
+        "parentName": "test",
+        "parentId": "d375849a-428f-4974-aaa1-e89a8ef96906",
+        "isMaster": false
+      },
+      {
+        "name": "suborg-level-4",
+        "id": "f192de1e-09d9-430e-884b-1b25cad8bbed",
+        "parentName": "suborg-test-3",
+        "parentId": "d76d7b83-8aa0-4b20-a689-3e7a7e1bcb58",
+        "isMaster": false
+      }
+    ]
+  }

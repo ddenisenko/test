@@ -1,0 +1,17 @@
+[
+    {
+      "id" : "1a8b89",
+      "email" : ""john.doe@mycompany.com"",
+      "username" : "john.doe"
+    },
+    {
+      "id" : "1a8b90",
+      "email" : ""john.crack@mycompany.com"",
+      "username" : "john.crack"
+    },
+    {
+      "id" : "1a8b91",
+      "email" : ""john.b.good@mycompany.com"",
+      "username" : "john.b.good"
+    }
+]

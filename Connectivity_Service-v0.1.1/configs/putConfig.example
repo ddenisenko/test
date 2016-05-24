@@ -1,0 +1,29 @@
+{
+  "id": "1fe6291d-b876-4f7e-866c-01d4a9775e40",
+  "name": "PayPal Test changed",
+  "environmentType": "Sandbox",
+  "owner": "datagateway",
+  "created": "2016-04-27T20:04:14",
+  "updated": "2016-05-03T19:58:35",
+  "extension": {
+    "name": "Paypal Connector",
+    "version": 9554,
+    "id": "3b899b8c-02b1-4371-8640-f61600b46138",
+    "configModel": "default"
+  },
+  "properties": {
+		"username": "tito.puente@salesforce.com",
+		"password": "mypassword",
+		"host": "http://login.salesforce.com"
+  },
+  "applications": [
+    {
+      "id": "12c0-40a5",
+      "name": "SFDC Integration Dev"
+    },
+    {
+      "id": "17f0-48b5",
+      "name": "SFDC Integration QA"
+    }
+  ]
+}

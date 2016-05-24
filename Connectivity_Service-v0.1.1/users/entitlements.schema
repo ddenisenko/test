@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "entitlements" : {
+        "type": "object",
+        "properties" : {
+          "vCoresProduction" : {
+            "type" : "object",
+            "properties" : {
+              "assigned" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "vCoresSandbox" : {
+            "type" : "object",
+            "properties" : {
+              "assigned" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "staticIps" : {
+            "type" : "object",
+            "properties" : {
+              "assigned" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "messaging" : {
+            "type" : "object",
+            "properties" : {
+              "assigned" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "gateways" : {
+            "type" : "object",
+            "properties" : {
+              "assigned" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "partnersProduction" : {
+            "type" : "object",
+            "properties" : {
+              "assigned" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "partnersSandbox" : {
+            "type" : "object",
+            "properties" : {
+              "assigned" : {
+                "type" : "integer"
+              }
+            }
+          }
+        }
+      }
+  }
+      
+}

@@ -1,0 +1,34 @@
+{  
+  "owner":"datagateway",
+  "extension":{  
+    "name":"Paypal Connector",
+    "id":"3b899b8c-02b1-4371-8640-f61600b46138",
+    "configModel":"default",
+    "version":9554
+  },
+  "environmentType":"Production",
+  "created":"2016-04-27T20:04:14",
+  "name":"PayPal",
+  "id":"1fe6291d-b876-4f7e-866c-01d4a9775e40",
+  "updated":"2016-05-03T17:15:34",
+  "properties":{  
+    "path":"/path",
+    "password":"abc123",
+    "basePath":"/api",
+    "port":"8080",
+    "useHttps":true,
+    "usePersistentConnections":false,
+    "type":"A1",
+    "algorithm":"Blowfish"
+  },
+  "applications":[  
+    {
+      "id": "12c0-40a5",
+      "name": "SFDC Integration Dev"
+    },
+    {
+      "id": "17f0-48b5",
+      "name": "SFDC Integration QA"
+    }
+  ]
+}

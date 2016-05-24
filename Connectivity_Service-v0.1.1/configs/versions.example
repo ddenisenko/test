@@ -1,0 +1,22 @@
+[
+  {
+    "id": 9554,
+    "object_id": 71,
+    "mule_version_id": "3.7",
+    "download_url": "google.com",
+    "doc_url": "https://docs.mulesoft.com/mule-user-guide/v/3.7/mule-paypal-anypoint-connector",
+    "feature_id": "org.mule.tooling.ui.extension.paypal-connector.3.7.0.feature.group",
+    "object_version": "3.0.1.201601191602",
+    "api_version": "Paypal connector",
+    "website": null,
+    "muleVersion": {
+      "id": "3.7",
+      "connectors_update_site_url": "http://repository.mulesoft.org/connectors/releases/3.5.0",
+      "doc_url": null,
+      "feature_id": null,
+      "active": true
+    },
+    "actions": [],
+    "isSuggested": true
+  }
+]
