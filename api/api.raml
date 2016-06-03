@@ -1,0 +1,237 @@
+#%RAML 0.8
+title: Notification API
+version: v1-dev
+baseUri: https://cis-notification-v1-dev.au.cloudhub.io/api
+protocols: [HTTPS]
+mediaType: application/json
+traits:
+  - secured:
+      displayName: secured
+/notifications:
+  post:
+    description: |
+      Send a notification through a selected channel to an audience. The request body must be one of, a single Notification Object or an array of one or more Notification Objects.
+    headers:
+      Authorization:
+        description: "Contains the Base64 encoded credentials of the service account used to call this service in the format username:password."
+        type: string
+        required: true
+        minLength: 1
+        repeat: false
+        example: |
+          Authorization: "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+      X-Caller-ID:
+        type: string
+        description: A unique ID identifying the application or service invoking the service.
+        required: true
+        minLength: 1
+        example: |
+          X-Client-ID: cis-msa-event-subscriber-v1-dev
+      X-Consumer-ID:
+        type: string
+        description: A unique ID identifying the ultimate consumer of the service.
+        required: true
+        minLength: 1
+        example: |
+          X-Consumer-ID: cis-s1-event-publisher-v1-dev
+      X-Correlation-ID:
+        type: string
+        description: The identifier (GUID/UUID) provided by the service consumer or source of the message to track a transaction across a distributed environment.
+        required: true
+        minLength: 1
+        example: |
+          X-Correlation-ID: f47ac10b-58cc-4372-a567-0e02b2c3d479
+    body:
+      application/json:
+        schema:  !include post-notifications-schema.json
+        example: !include post-notifications-example.json
+    responses:
+      "202":
+        description: The request body was valid and accepted for processing at a later date.
+      "400":
+        description: The request body was invalid, either due to malformed JSON or a data validation error. See the response data for more detail.
+        body:
+          application/json:
+            example: !include example-400-response-1.json
+      "401":
+        description: The supplied access tokens are missing or not correct. See the response for more detail.
+        body:
+          application/json:
+            example: !include example-401-response.json
+      "403":
+        description: The specified user is not authorised to access this resource.
+        body:
+          application/json:
+            example: !include example-403-response.json
+      "405":
+        description: The specified HTTP Method is not allowed for the resource.
+        body:
+          application/json:
+            example: !include example-405-response.json
+      "415":
+          description: The specified Content-Type is not supported.
+          body:
+            application/json:
+              example: !include example-415-response.json
+      "500":
+        description: The server encountered an unexpected condition which prevented it from fulfilling the request.
+        body:
+          application/json:
+            example: !include example-500-response.json
+      "503":
+        description: The underlying system used to fulfill the notification request is currently unavailable.
+        body:
+          application/json:
+            example: !include example-503-response.json
+  is: [secured]
+/tags:
+  post:
+    description: |
+       Allows the addition, removal, and setting of tags on a user.
+    headers:
+      Authorization:
+        description: "Contains the Base64 encoded credentials of the service account used to call this service in the format username:password."
+        type: string
+        required: true
+        minLength: 1
+        repeat: false
+        example: |
+          Authorization: "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+      X-Caller-ID:
+        type: string
+        description: A unique ID identifying the application or service invoking the service.
+        required: true
+        minLength: 1
+        example: |
+          X-Client-ID: cis-msa-event-subscriber-v1-dev
+      X-Consumer-ID:
+        type: string
+        description: A unique ID identifying the ultimate consumer of the service.
+        required: true
+        minLength: 1
+        example: |
+          X-Consumer-ID: cis-s1-event-publisher-v1-dev
+      X-Correlation-ID:
+        type: string
+        description: The identifier (GUID/UUID) provided by the service consumer or source of the message to track a transaction across a distributed environment.
+        required: true
+        minLength: 1
+        example: |
+          X-Correlation-ID: f47ac10b-58cc-4372-a567-0e02b2c3d479
+    body:
+      application/json:
+        schema: !include post-tags-schema.json
+        example: !include post-tags-example.json
+    responses:
+      "204":
+        description: The request body was valid and processed.
+      "400":
+        description: The request body was invalid, either due to malformed JSON or a data validation error. See the error data for more detail.
+        body:
+          application/json:
+            example: !include example-400-response-2.json
+      "401":
+        description: The supplied access tokens are missing or not correct. See the response for more detail.
+        body:
+          application/json:
+            example: !include example-401-response.json
+      "403":
+        description: The specified user is not authorised to access this resource.
+        body:
+          application/json:
+            example: !include example-403-response.json
+      "405":
+        description: The specified HTTP Method is not allowed for the resource.
+        body:
+          application/json:
+            example: !include example-405-response.json
+      "415":
+          description: The specified Content-Type is not supported.
+          body:
+            application/json:
+              example: !include example-415-response.json
+      "500":
+        description: The server encountered an unexpected condition which prevented it from fulfilling the request.
+        body:
+          application/json:
+            example: !include example-500-response.json
+      "503":
+        description: The underlying system used to fulfill the notification request is currently unavailable.
+        body:
+          application/json:
+            example: !include example-503-response.json
+  is: [secured]
+/occ:
+  post:
+    description: |
+       Send an Official Curtin Communication to a student.
+    headers:
+      Authorization:
+        description: "Contains the Base64 encoded credentials of the service account used to call this service in the format username:password."
+        type: string
+        required: true
+        minLength: 1
+        repeat: false
+        example: |
+          Authorization: "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+      X-Caller-ID:
+        type: string
+        description: A unique ID identifying the application or service invoking the service.
+        required: true
+        minLength: 1
+        example: |
+          X-Client-ID: cis-msa-event-subscriber-v1-dev
+      X-Consumer-ID:
+        type: string
+        description: A unique ID identifying the ultimate consumer of the service.
+        required: true
+        minLength: 1
+        example: |
+          X-Consumer-ID: cis-s1-event-publisher-v1-dev
+      X-Correlation-ID:
+        type: string
+        description: The identifier (GUID/UUID) provided by the service consumer or source of the message to track a transaction across a distributed environment.
+        required: true
+        minLength: 1
+        example: |
+          X-Correlation-ID: f47ac10b-58cc-4372-a567-0e02b2c3d479
+    body:
+      application/json:
+        schema: !include post-occ-schema.json
+        example: !include post-occ-example.json
+    responses:
+      "200":
+        description: The OCCs were sent successfully.
+        body:
+          application/json:
+            example: !include example-200-response.json
+      "400":
+        description: The request body was invalid, either due to malformed JSON or a data validation error. See the error data for more detail.
+        body:
+          application/json:
+            example: !include example-400-response-2.json
+      "401":
+        description: The request body was invalid, either due to malformed JSON or a data validation error. See the error data for more detail.
+        body:
+          application/json:
+            example: !include example-401-response.json
+      "403":
+        description: The specified user is not authorised to access this resource.
+        body:
+          application/json:
+            example: !include example-403-response.json
+      "405":
+        description: The specified HTTP Method is not allowed for the resource.
+        body:
+          application/json:
+            example: !include example-405-response.json
+      "500":
+        description: The server encountered an unexpected condition which prevented it from fulfilling the request.
+        body:
+          application/json:
+            example: !include example-500-response.json
+      "503":
+        description: The underlying system used to fulfill the notification request is currently unavailable.
+        body:
+          application/json:
+            example: !include example-503-response.json

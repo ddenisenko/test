@@ -1,0 +1,20 @@
+{
+  "metadata" : {
+    "status": 503,
+    "links": [
+      {
+        "rel" : "self",
+        "href" : "https://cis-notification-v1-dev.au.cloudhub.io/api/tags"
+      }
+    ]
+  },
+  "error" : {
+    "code": 1,
+    "message": "Service Unavailable",
+    "description": "Urban Airship is currently unavailable: Timeout exceeded",
+    "link" : {
+      "rel": "describedby",
+      "href" : "https://cis-notification-v1-dev.au.cloudhub.io/api/tags/v1/documentation/errors/503"
+    }
+  }
+}

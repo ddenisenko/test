@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "app": {
+      "id": "#app",
+      "type": "object",
+      "additionalProperties": false,
+      "title": "App schema.",
+      "description": "The app configuration.",
+      "name": "app",
+      "properties": {
+        "app": {
+          "id": "#app/appBody",
+          "type": "object",
+          "additionalProperties": false,
+          "title": "App schema.",
+          "description": "The app configuration.",
+          "name": "app",
+          "properties": {
+            "id": {
+              "id": "#app/appBody/id",
+              "type": "string",
+              "minLength": 1,
+              "title": "Id schema",
+              "description": "Unique identifier of the notification app. This is provided by your Notification Service administrator.",
+              "name": "id"
+            },
+            "push": {
+              "id": "#app/appBody/push",
+              "title": "App push schema.",
+              "description": "App specific configuration of the notication push request.",
+              "name": "push",
+              "oneOf": [
+                {
+                  "id": "#app/appBody/push/0",
+                  "title": "Push notification",
+                  "description": "A single push notification to be sent to an audience through the 'app' channel.",
+                  "$ref": "#/definitions/push"
+                },
+                {
+                  "id": "#app/appBody/push/1",
+                  "type": "array",
+                  "minItems": 1,
+                  "additionalItems": false,
+                  "title": "Array of push notifications",
+                  "description": "An array of push notifications to be sent to an audience through the 'app' channel.",
+                  "items": {
+                    "$ref": "#/definitions/push"
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "id"
+          ]
+        }
+      },
+      "required": [
+        "app"
+      ]
+    },
+    "audience": {
+      "id": "#audience",
+      "additionalProperties": true,
+      "title": "Audience schema",
+      "description": "Criteria used to select an audience for a notification. It conforms to the http://docs.urbanairship.com/api/ua.html#audience-selection object description.",
+      "name": "audience",
+      "oneOf": [
+        {
+          "id": "#audience/0",
+          "type": "string",
+          "pattern": "^all$",
+          "title": "All audience schema",
+          "description": "All members of the audience.",
+          "name": "all"
+        },
+        {
+          "id": "#audience/1",
+          "type": "object",
+          "additionalProperties": true
+        }
+      ]
+    },
+    "push": {
+      "id": "#push",
+      "type": "object",
+      "additionalProperties": true,
+      "title": "App push schema",
+      "description": "App push notification to be sent to an audience through an 'app' channel. It conforms to the Urban Airship API v3 Push Object - http://docs.urbanairship.com/api/ua.html#push-object.",
+      "name": "push"
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "title": "Push Notification Request schema",
+  "description": "A push notification request.",
+  "properties": {
+    "announcement": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Announcement schema",
+      "description": "A short announcement message to be sent along all apps in a channel unless overridden.",
+      "name": "announcement"
+    },
+    "audience": {
+      "title": "Audience",
+      "description": "Criteria used to select an audience for a notification announcement.",
+      "$ref": "#/definitions/audience"
+    },
+    "channel": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "additionalItems": false,
+      "title": "Channel schema",
+      "description": "Channels to tag users in.",
+      "name": "channel",
+      "items": {
+        "$ref": "#/definitions/app"
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "announcement",
+        "channel"
+      ]
+    }
+  ]
+}

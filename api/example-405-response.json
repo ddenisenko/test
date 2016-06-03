@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "status": 405,
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://cis-notification-v1-dev.au.cloudhub.io/api/tags"
+      }
+    ]
+  },
+  "error": {
+    "code": 405,
+    "message": "Method not allowed",
+    "description": "The specified HTTP Method is not allowed for the resource.",
+    "link": {
+      "rel": "describedBy",
+      "href": "https://cis-notification-v1-dev.au.cloudhub.io/api/tags/v1/documentation/errors/405"
+    }
+  }
+}

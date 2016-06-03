@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "status": 415,
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://cis-notification-v1-dev.au.cloudhub.io/api/tags"
+      }
+    ]
+  },
+  "error": {
+    "code": 415,
+    "message": "Unsupported media type",
+    "description": "The specified Content-Type is not supported.",
+    "link": {
+      "rel": "describedBy",
+      "href": "https://cis-notification-v1-dev.au.cloudhub.io/api/tags/v1/documentation/errors/415"
+    }
+  }
+}

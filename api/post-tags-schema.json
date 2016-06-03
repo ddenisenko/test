@@ -1,0 +1,176 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "app": {
+      "id": "#app",
+      "type": "object",
+      "additionalProperties": false,
+      "title": "App schema.",
+      "description": "The app configuration.",
+      "name": "app",
+      "properties": {
+        "app": {
+          "id": "#app/appBody",
+          "type": "object",
+          "additionalProperties": false,
+          "title": "App schema.",
+          "description": "The app configuration.",
+          "name": "app",
+          "properties": {
+            "id": {
+              "id": "#app/appBody/id",
+              "type": "string",
+              "minLength": 1,
+              "title": "Id schema",
+              "description": "Unique identifier of the notification app. This is provided by your Notification Service administrator.",
+              "name": "id"
+            },
+            "tag": {
+              "id": "#app/appBody/tag",
+              "title": "App tag schema.",
+              "description": "App specific configuration of the notication tag request.",
+              "$ref": "#/definitions/tag"
+            }
+          },
+          "required": [
+            "id",
+            "tag"
+          ]
+        }
+      },
+      "required": [
+        "app"
+      ]
+    },
+    "tagGroup": {
+      "id": "#tagGroup",
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Tag group schema.",
+      "description": "Unique set of tags to operate on in a tag group.",
+      "name": "tagGroup",
+      "properties": {
+        "group": {
+          "id": "#tagGroup/group",
+          "type": "string",
+          "minLength": 1,
+          "title": "Group schema",
+          "description": "Unique identifier of the tag group.",
+          "name": "group"
+        },
+        "tag": {
+          "type": "array",
+          "minLength": 1,
+          "uniqueItems": true,
+          "name": "tags",
+          "title": "Tag schema",
+          "description": "Unique set of tags.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "group",
+        "tag"
+      ]
+    },
+    "tag": {
+      "id": "#tag",
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Tag schema.",
+      "description": "Set of tags to apply to users.",
+      "name": "tag",
+      "properties": {
+        "userId": {
+          "id": "#tag/userId",
+          "type": "array",
+          "minLength": 1,
+          "uniqueItems": true,
+          "title": "User Id schema",
+          "description": "User ids to tag.",
+          "name": "id",
+          "items": {
+            "type": "string"
+          }
+        },
+        "add": {
+          "id": "#tag/add",
+          "type": "array",
+          "title": "Tags ",
+          "minLength": 1,
+          "uniqueItems": true,
+          "title": "Add schema",
+          "description": "Add tags to the users in the listed tag groups.",
+          "items": {
+            "$ref": "#/definitions/tagGroup"
+          }
+        },
+        "remove": {
+          "id": "#tag/remove",
+          "type": "array",
+          "minLength": 1,
+          "uniqueItems": true,
+          "title": "Remove schema",
+          "description": "Remove tags from the users in the listed tag groups.",
+          "items": {
+            "$ref": "#/definitions/tagGroup"
+          }
+        },
+        "set": {
+          "id": "#tag/set",
+          "type": "array",
+          "minLength": 1,
+          "uniqueItems": true,
+          "title": "Set schema",
+          "description": "Set tags for the users in the listed tag groups.",
+          "items": {
+            "$ref": "#/definitions/tagGroup"
+          }
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "add"
+          ]
+        },
+        {
+          "required": [
+            "remove"
+          ]
+        },
+        {
+          "required": [
+            "set"
+          ]
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "title": "Tag Request schema",
+  "description": "A tag notification request .",
+  "properties": {
+    "channel": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "additionalItems": false,
+      "title": "Channel schema",
+      "description": "Channels to tag users in.",
+      "name": "channel",
+      "items": {
+        "$ref": "#/definitions/app"
+      }
+    }
+  },
+  "required": [
+    "channel"
+  ]
+}

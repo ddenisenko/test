@@ -1,0 +1,33 @@
+{
+  "metadata" : {
+    "status": 400,
+    "links": [
+      {
+        "rel" : "self",
+        "href" : "https://cis-notification-v1-dev.au.cloudhub.io/api/notifications"
+      }
+    ]
+  },
+  "error" : {
+    "code": 1,
+    "message": "Bad Request",
+    "description": "Refer to error collection.",
+    "collection" : [
+      {
+        "channel": "app",
+        "id": "elsie",
+        "error": "Unrecognized device type 'huawei'",
+        "path": "[0].device_types[2]",
+        "location": {
+          "line": 3,
+          "column": 49
+        },
+        "operationId": "5ba1a6e0-7eb1-11e5-8a5b-90e2ba2901f0"
+      }
+    ],
+    "link" : {
+      "rel": "describedby",
+      "href" : "https://cis-notification-v1-dev.au.cloudhub.io/api/notifications/v1/documentation/errors/400"
+    }
+  }
+}

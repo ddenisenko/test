@@ -1,0 +1,6 @@
+{
+  "requestingParty": "CRM",
+  "recipientId": ["1234567S"],
+  "header": "this is the header of the official communication",
+  "body": "this is the body of the official communication"
+}

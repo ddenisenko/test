@@ -1,0 +1,24 @@
+{
+  "metadata" : {
+    "status": 200,
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://cis-notification-v1-dev.au.cloudhub.io/api/occ"
+      }
+    ]
+  },
+  "collection" : [
+  	{ 
+  		"recipientId": "99999999",
+  		"receiptId": 24532323,
+  	},
+  	{
+  		"xxxx": "sendOCCMessage() failed\nException Detail: validation.noValidRecipients"
+  	},
+  	{ 
+  		"recipientId": "99999998",
+  		"receiptId": 24532324
+  	},
+  ]
+}

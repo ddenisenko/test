@@ -1,0 +1,47 @@
+{
+  "announcement": "Hello and welcome",
+  "audience": {
+    "tag": "students",
+    "group": "user-groups"
+  },
+  "channel": [
+    {
+      "app": {
+        "id": "elsie",
+        "push": [
+          {
+            "audience": {
+              "tag": "students-override",
+              "group": "user-groups-override"
+            },
+            "notification": {
+              "ios": {
+                "alert": "Hello, iDevices",
+                "badge": "+10",
+                "title": "Elsie"
+              },
+              "android": {
+                "alert": "Hello, Android Devices",
+                "title": "Elsie"
+              }
+            },
+            "options": {
+              "expiry": "2015-12-31T12:00:00"
+            },
+            "deviceTypes": "all",
+            "inApp": {
+              "alert": "Happy hello",
+              "displayType": "banner",
+              "display": {
+                "primaryColor": "#FF0000",
+                "secondaryColor": "#00FF00",
+                "position": "top",
+                "duration": 600
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

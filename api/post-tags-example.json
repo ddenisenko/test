@@ -1,0 +1,28 @@
+{
+  "channel": [
+    {
+      "app": {
+        "id": "elsie",
+        "tag": {
+          "userId" : [ "18009990", "18009991", "18007812" ],
+          "add" : [
+            {
+              "group": "student",
+              "tag": [ "postgraduate" ]
+            },
+            {
+              "group": "postgraduate",
+              "tag": [ "masters" ]
+            }
+          ],
+          "remove" : [
+            {
+              "group": "student",
+              "tag": [ "undergraduate" ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
