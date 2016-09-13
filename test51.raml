@@ -1,0 +1,16 @@
+#%RAML 1.0
+title: My API with Types
+
+types:
+  TestType:
+    type: object
+    properties:
+      stringProp: string
+    example:
+      stringProp: "1.1"
+
+/test:
+  get:
+    body:
+      application/json:
+        type: TestTyp
