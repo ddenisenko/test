@@ -1,0 +1,1011 @@
+#%RAML 0.8
+title: 3D Printing Job Submission API
+#baseUri: http://15.126.234.113:8000/api/{version}/
+baseUri: http://mocksvc.mulesoft.com/mocks/403cce62-175a-45e4-898a-1b8f17bea3b0/
+version: 1.0
+protocols: [ HTTP ]
+mediaType: application/xml
+
+documentation:
+ - title: Introduction
+   content: |
+
+     The HP 3D Printer API is designed to allow client applications to easily submit, track, and manage print jobs to HP Multi Jet Fusion products as well as access printer-level notifications, alerts, and status messages.  The API is made up of a collection of REST resources and uses an XML binding for all request and response payloads.  HP Multi Jet Fusion printers accept 3MF files using the core specification and require the 3MF Slice and Production extensions to be used in order to guarantee compatibility.
+
+ - title: Printer Interaction Model
+   content: |
+
+      Printer Discovery
+     
+      Printer Service Discovery
+
+      Printer Information and Capabilities 
+     
+      Print Jobs
+     
+      Printer Status and Alerts
+      
+      Supplies Status 
+
+ - title: Printer Data Handling
+   content: |
+      In general, the values returned from a printer in service payloads are assumed NOT to be displayable content in an application.  For instance, a Printer Status message of TrolleyDoorOpen is not intended to be displayed directly as such.  Clients should determine the appropriate value for the UI / context in which the information is being and provide a meaningful display string.  
+      
+   
+          
+ - title: Client Authentication
+   content: |
+     All Service Calls are secured using Basic Authentication (based on rfc2617). The token is a Base64 encoding of following tuple: applicationID:secretToken.  Each unique client of the HP 3D Printer API will be assigned a unique Application ID and Token.  Each HTTP request sent to the printer MUST include the encrypted token in the Authorization HTTP header field.  Ex: Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ== 
+     
+     HTTP requests NOT including the Authorization header will return HTTP response code 401.
+
+ - title: Printer Service Discovery
+   content: |
+     All Printer Service URI's are provided via Discovery.xml.  Clients should always use the URI's from Discovery.xml to access printer resources and never hardcode service endpoints.
+         
+ - title: Printer Information and Capabilities
+   content: |
+     Identification.xml provides details about the target printer as well as the printing capabilities that the printer supports.  
+     
+ - title: Print Jobs
+   content: |
+
+    Job Flow:
+    
+    Job Submission
+  
+    Job and Part Status - Status / Completion Status
+  
+    Examining Job Contents - Assemblies / Parts
+    
+    
+ - title: Printer Status and Alerts
+   content: |
+     
+     HP Printers report what the printer is currently doing as well as any active alerts across any printer subsystem.  
+          
+securitySchemes:
+  - basic:
+     type: Basic Authentication     
+traits:
+  - success:
+      responses:
+        200:
+          description: <b>OK</b>. The request has succeeded.
+  - badRequest:
+      responses:
+        400:
+          description: <b>Bad Request</b>. The request could not be understood due to malformed syntax.    
+  - internalServerError:
+      responses:
+        500:
+          description: <b>Internal Server Error</b>. The server encountered an unexpected condition which prevented it from fulfilling the request.  
+  - unauthorized:
+      responses:
+        401:
+          description: <b>Unauthorized</b>. Authentication token/header not valid or missing.
+          body:
+            text/xml:
+              schema: |
+              example: |
+                <?xml version="1.0" encoding="UTF-8" ?>
+                <piws:tokens xsi:schemaLocation="http://www.hp.com/schemas/piws/2015/06/09 PIWS.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:piws="http://www.hp.com/schemas/job/2015/06/09" xmlns:dd="http://www.hp.com/schemas/dictionary/2015/06/09">
+                  <dd:Version>1.0.0.0</dd:Version>
+                  <piws:Link method="GET">printer_address:port/HP-MJF/PI/tokenRefresh?client_token=client_token<piws:Link>
+  - forbidden:
+      responses:
+        403:
+          description: <b>Forbidden</b>. Authorization token is valid, but the client sw has not the right scope to access this resource.          
+  - notFound:
+      responses:
+        404:
+          description: There is no <<item>> with this <<item>>Id.
+          body:
+            text/xml:
+              example: |
+                <b>reason</b>"Item does not exist"<b>    
+  - conflict:
+      responses:
+        409:
+          description: <<item>> could not be <<action>> due a conflict with the current state of <<item>>.
+          body:
+            text/xml:
+              example: |
+  - notImplemented:
+      responses:
+        513:
+          description: <<item>> could not be <<action>> because action is not implemented.
+          body:
+            text/xml:
+              example: |
+
+  - diskFull:
+      responses:
+        413:
+          description: Insufficient storage for <<item>>.
+          body:
+            text/xml:
+              example: |
+
+/HP-MJF/PI/ServiceDiscovery:
+  displayName: Printer Service Discovery
+  description:
+    The DiscoveryTree provides links to the various service endpoints in a dynamic fashion.  Clients MUST use the resrouce links in Discovery.xml to obtain links to printer service endpoints and MUST NOT use hardcoded links.
+  get:
+    securedBy: [basic]
+    is: [ "unauthorized", "forbidden", "notFound": { item: "Service Discovery" }  ]
+    description: Retrieve service discovery tree from printer
+    responses:
+      200:
+        description: <b>OK</b>. 
+        body:
+          text/xml:
+            schema: |
+            example: |
+              <?xml version="1.0" encoding="UTF-8" ?>
+              <piws:DiscoveryTree xsi:schemaLocation="http://www.hp.com/schemas/piws/2015/06/09 PIWS.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:piws="http://www.hp.com/schemas/piws/2015/06/09" xmlns:dd="http://www.hp.com/schemas/dictionary/2015/06/09">
+                  <dd:Version>1.0.0.0</dd:Version>
+                  <piws:SupportedTree>
+                      <dd:ResourceURI>/HP-MJF/PI/Identification</dd:ResourceURI>
+                      <dd:ResourceType>identification:Identification</dd:ResourceType>
+                      <dd:Revision>http://www.hp.com/schemas/identification/2015/06/09</dd:Revision>
+                  </piws:SupportedTree>
+                  <piws:SupportedTree>
+                      <dd:ResourceURI>/HP-MJF/PI/AgentStatus</dd:ResourceURI>
+                      <dd:ResourceType>inksystem:InkSystem</dd:ResourceType>
+                      <dd:Revision>http://www.hp.com/schemas/inksystem/2015/06/09</dd:Revision>
+                  </piws:SupportedTree>
+                  <piws:SupportedTree>
+                      <dd:ResourceURI>/HP-MJF/PI/PrinterStatus</dd:ResourceURI>
+                      <dd:ResourceType>status:Status</dd:ResourceType>
+                      <dd:Revision>http://www.hp.com/schemas/status/2015/06/09</dd:Revision>
+                  </piws:SupportedTree>
+                  <piws:SupportedTree>
+                      <dd:ResourceURI>/HP-MJF/PI/MaterialListStatus</dd:ResourceURI>
+                      <dd:ResourceType>materiallist:MaterialListStatus</dd:ResourceType>
+                      <dd:Revision>http://www.hp.com/schemas/materiallist/2015/06/09</dd:Revision>
+                  </piws:SupportedTree>
+                  <piws:SupportedIfc>
+                      <piws:ManifestURI>/HP-MJF/PI/JobsManifest</piws:ManifestURI>
+                      <dd:ResourceType>jobs:Jobs</dd:ResourceType>
+                      <dd:Revision>http://www.hp.com/schemas/jobs/2015/06/09</dd:Revision>
+                  </piws:SupportedIfc>
+              </piws:DiscoveryTree>
+
+/{discoveryURI}/Identification:
+  displayName: Printer Identity and Capabilities
+  description:
+    The Identity tree provides details about the printer model and instance, as well as the printer's capabilites.  
+  get:
+    securedBy: [basic]
+    is: [ "unauthorized", "forbidden", "notFound": { item: "Identification" }  ]
+    description: Retrtieve printer capabilities and metadata.
+    responses:
+      200:
+        description: <b>OK</b>. 
+
+/{discoveryURI}/MaterialListStatus:
+  displayName: Supported Materials List
+  description:
+    The MaterialListStatus tree provides a list of supported    
+  get:
+    securedBy: [basic]
+    is: [ "unauthorized", "forbidden", "notFound": { item: "MaterialListStatus" }  ]
+    description: Retrieve list of supported materials in HP P
+    responses:
+      200:
+        description: <b>OK</b>. 
+        body:
+          text/xml:
+            schema: |
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <materiallist:MaterialList xsi:schemaLocation="http://www.hp.com/schemas/materiallist/2015/06/09 MaterialListStatus.xsd" xmlns:materiallist="http://www.hp.com/schemas/materiallist/2015/06/09" xmlns:dd="http://www.hp.com/schemas/dictionary/2015/06/09" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                  <dd:Version>1.0.0.0</dd:Version>
+                  <materiallist:List>
+                      <materiallist:Material>
+                          <materiallist:Id>1000</materiallist:Id>
+                          <materiallist:DonorId/>
+                          <materiallist:Category>
+                              <materiallist:Id>POLYAMIDES</materiallist:Id>
+                              <materiallist:Order/>
+                              <materiallist:Localizations>
+                                  <materiallist:Localization>
+                                      <materiallist:ISOCode>en_US</materiallist:ISOCode>
+                                      <materiallist:Value>POLYAMIDES</materiallist:Value>
+                                  </materiallist:Localization>
+                              </materiallist:Localizations>
+                          </materiallist:Category>
+                          <materiallist:Revision>1.1.0</materiallist:Revision>
+                          <materiallist:Localizations>
+                              <materiallist:Localization>
+                                  <materiallist:ISOCode>en_US</materiallist:ISOCode>
+                                  <materiallist:Value>HP PA11</materiallist:Value>
+                              </materiallist:Localization>
+                          </materiallist:Localizations>
+                          <materiallist:IsVisible>true</materiallist:IsVisible>
+                          <materiallist:Properties/>
+                          <materiallist:SupportedAgents/>
+                          <materiallist:SupportedColors/>
+                          <materiallist:SupportedEnergySystems/>
+                      </materiallist:Material>
+                      <materiallist:Material>
+                          <materiallist:Id>1001</materiallist:Id>
+                          <materiallist:DonorId/>
+                          <materiallist:Category>
+                              <materiallist:Id>POLYAMIDES</materiallist:Id>
+                              <materiallist:Order/>
+                              <materiallist:Localizations>
+                                  <materiallist:Localization>
+                                      <materiallist:ISOCode>en_US</materiallist:ISOCode>
+                                      <materiallist:Value>POLYAMIDES</materiallist:Value>
+                                  </materiallist:Localization>
+                              </materiallist:Localizations>
+                          </materiallist:Category>
+                          <materiallist:Revision>1.1.0</materiallist:Revision>
+                          <materiallist:Localizations>
+                              <materiallist:Localization>
+                                  <materiallist:ISOCode>en_US</materiallist:ISOCode>
+                                  <materiallist:Value>HP PA12</materiallist:Value>
+                              </materiallist:Localization>
+                          </materiallist:Localizations>
+                          <materiallist:IsVisible>true</materiallist:IsVisible>
+                          <materiallist:Properties/>
+                          <materiallist:SupportedAgents/>
+                          <materiallist:SupportedColors/>
+                          <materiallist:SupportedEnergySystems/>
+                      </materiallist:Material>
+                  </materiallist:List>
+                  <materiallist:Version>1.0.0</materiallist:Version>
+              </materiallist:MaterialList>
+
+/{discoveryURI}/PrinterStatus:
+  displayName: Printer Status and Alerts
+  description:
+    Status.xml contains the current status of the printer as well as any active alerts.  Alerts can be information, warnings, or errors.       
+  get:
+    securedBy: [basic]
+    is: [ "unauthorized", "forbidden", "notFound": { item: "Status" } ]
+    description: Retrieve current printer status and alerts.
+    responses:
+      200:
+        description: <b>OK</b>. 
+        body:
+          text/xml:
+            schema: |
+            example: |
+              <?xml version="1.0" encoding="UTF-8" ?>
+              <ss:Status xsi:schemaLocation="http://www.hp.com/ss ../Schemas/Status.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ss="http://www.hp.com/ss">
+                <!--THIS DATA IS SUBJECT TO DISCLAIMER(S) INCLUDED WITH THE PRODUCT OF ORIGIN.-->
+                <UserReported>
+                  <Status>
+                      <Message>Ready</Message>
+                      <Category>READY</Category>
+                    </Status>
+                    <Alerts>
+                      <Alert>
+                        <Message>LowInk</Message>
+                        <Category>WARNING</Category>
+                      </Alert>
+                      <Alert>
+                        <Message>PowderMismatch</Message>
+                        <Category>WARNING</Category>
+                      </Alert>
+                      <Alert>
+                        <Message>TrollyDoorOpen</Message>
+                        <Category>ERROR</Category>
+                      </Alert>
+                      <Alert>
+                        <Message>ReplacePrintHead</Message>
+                        <Category>INVALID_SUPPLY</Category>
+                      </Alert>
+                    </Alerts>
+                  </UserReported>
+              </ss:Status>   
+
+/{discoveryURI}/AgentStatus:
+  displayName: Agent Information
+  description:
+    AgentStatus.xml contains detailed information about the agents used in MJF printers, including current levels of all installed cartiridges at an aggregate level for each type.  
+  get:
+    securedBy: [basic]
+    is: [ "unauthorized", "forbidden", "notFound": { item: "AgentStatus" } ]
+    description: Retrieve current agent levels and cartidge information.
+    responses:
+      200:
+        description: <b>OK</b>. 
+        body:
+          text/xml:
+            schema: |
+            example: |
+              <?xml version="1.0" encoding="UTF-8" ?>
+              <inksystem:InkSystem xsi:schemaLocation="http://www.hp.com/schemas/inksystem/2015/06/09 InkSystem.xsd" xmlns:inksystem="http://www.hp.com/schemas/inksystem/2015/06/09" xmlns:dd="http://www.hp.com/schemas/dictionary/2015/06/09" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                  <dd:Version>1.0.0.0</dd:Version>
+                  <inksystem:InkSlotGroupCollection>
+                      <inksystem:InkSlotGroup>
+                          <inksystem:Color>MatteBlack</inksystem:Color>
+                          <inksystem:SlotGroupId>1</inksystem:SlotGroupId>
+                          <inksystem:InkAgentType>Fusing</inksystem:InkAgentType>
+                          <inksystem:InkSlotGroupInfo>
+                              <inksystem:InkSupplyGroupInfo>
+                                  <inksystem:Capacity>
+                                      <dd:Value>5000</dd:Value>
+                                      <dd:Unit>cc</dd:Unit>
+                                  </inksystem:Capacity>
+                                  <inksystem:Level>
+                                      <dd:Value>4000</dd:Value>
+                                      <dd:Unit>cc</dd:Unit>
+                                  </inksystem:Level>
+                                  <inksystem:LevelPercentage>80.000000</inksystem:LevelPercentage>
+                                  <inksystem:UserReportedStatus>
+                                      <inksystem:UserReportedStatusFlag>Ok</inksystem:UserReportedStatusFlag>
+                                  </inksystem:UserReportedStatus>
+                              </inksystem:InkSupplyGroupInfo>
+                          </inksystem:InkSlotGroupInfo>
+                      </inksystem:InkSlotGroup>
+                      <inksystem:InkSlotGroup>
+                          <inksystem:Color>MatteBlack</inksystem:Color>
+                          <inksystem:SlotGroupId>2</inksystem:SlotGroupId>
+                          <!-- What about Localization? -->
+                          <inksystem:InkAgentType>Detailing</inksystem:InkAgentType>
+                          <inksystem:InkSlotGroupInfo>
+                              <inksystem:InkSupplyGroupInfo>
+                                  <inksystem:Capacity>
+                                      <dd:Value>5000</dd:Value>
+                                      <dd:Unit>cc</dd:Unit>
+                                  </inksystem:Capacity>
+                                  <inksystem:Level>
+                                      <dd:Value>4000</dd:Value>
+                                      <dd:Unit>cc</dd:Unit>
+                                  </inksystem:Level>
+                                  <inksystem:LevelPercentage>80.000000</inksystem:LevelPercentage>
+                                  <inksystem:UserReportedStatus>
+                                  <inksystem:UserReportedStatusFlag>Ok</inksystem:UserReportedStatusFlag>
+                                  </inksystem:UserReportedStatus>
+                              </inksystem:InkSupplyGroupInfo>
+                          </inksystem:InkSlotGroupInfo>
+                      </inksystem:InkSlotGroup>
+                  </inksystem:InkSlotGroupCollection>
+              </inksystem:InkSystem>
+
+/{discoveryURI}/jobs:
+  displayName: 
+    Print jobs
+  description:
+    A Job is the primary resource for submitting and managing print jobs in a printer.  Jobs allows an application to both create a new new print job (POST) and retrieve the full list of currently active jobs in the printer (GET).  
+  get:
+    securedBy: [basic]
+    is: [ "unauthorized", "forbidden" ]
+    description: Retrieve list of Jobs currently active in the target printer.  This does NOT include Jobs that have been deleted from the printer's job manager or those jobs stored in print history.  
+    responses:
+      200:
+        description: <b>OK</b>. 
+        body:
+          text/xml:
+            schema: |
+            example: |
+              <?xml version="1.0" encoding="UTF-8" ?>
+              <jobs:Jobs xsi:schemaLocation="http://www.hp.com/schemas/piws/2015/06/09 PIWS.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jobs="http://www.hp.com/schemas/jobs/2015/06/09" xmlns:dd="http://www.hp.com/schemas/dictionary/2015/06/09">
+                  <dd:Version>
+                      <dd:Revision>1.0.0.0</dd:Revision>
+                  </dd:Version>
+                <jobs:Job>
+                  <jobs:Job_ID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</jobs:Job_ID>
+                  <jobs:Links>
+                    <jobs:Link method="GET" uri="<printer address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+                  </jobs:Links>
+                </jobs:Job>
+                <jobs:Job>
+                  <jobs:Job_ID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</jobs:Job_ID>
+                  <jobs:Links>
+                    <jobs:Link method="GET" uri="<printer address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+                  </jobs:Links>
+                </jobs:Job>
+                <jobs:Job>
+                  <jobs:Job_ID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</jobs:Job_ID>
+                  <jobs:Links>
+                    <jobs:Link method="GET" uri="<printer address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+                  </jobs:Links>
+                </jobs:Job>
+              </jobs:Jobs>
+              
+  post:
+    securedBy: [basic]
+    is: [ "unauthorized", "forbidden",  "diskFull": {item: "job"}]
+    description: Create a 3D job with the 3MF file included in the payload. Payload will be verified after job upload is complete, so at submission time there is no indication whether or not the job contents are valid, only that a job object has been successfully created.  In the response payload for the job, most of the package-derived information will not be available.  In oder to ensure that a Job Name is available upon job creation, the content-description header must be used, and the contents must be form-data; name=file; filename=filename.  The filename should will be displayed as the job name on the printer front panel, so it should be something that a user will recognize (like the file name of the build package being uplaoded). The JobName element in the response package should return the submitted value from the client.  TODO - I'm still working on the proper RAML formatting of the content-description. 
+    
+    headers:
+      Content-Disposition:
+      attachment; filename:
+      
+    body:
+        multipart/form-data:
+          formParameters:
+            file:
+              description: Valid 3MF Package using Slice and Production Extensions
+              type: file
+              required: true
+    responses:
+      202:
+        description: 3MF file <b>successfully uploaded</b>. This means the transmition of the build package is complete and that the printer has accepted the job.  Because it can take some time to process the build package and determine whether it is structurally and semantically sound, clients will receive an HTTP 202 response code.  In the Job payload that is returned from a JOB post, it is unlikely that any build package level information will be provided.  In order to get the  The job/status resource esposes additional success/errors during the 3MF parsing and processing. It also returns a build version number that must be used to manage later the build and keep data consistency.
+        body:
+          text/xml:  
+            schema: |
+            example: | 
+              <?xml version="1.0" encoding="UTF-8"?>
+              <job:Job xsi:schemaLocation="http://www.hp.com/schemas/piws/2015/06/09 PIWS.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:job="http://www.hp.com/schemas/job/2015/06/09" xmlns:dd="http://www.hp.com/schemas/dictionary/2015/06/09">
+                <dd:Version>
+                  <dd:Revision>1.0.0.0</dd:Revision>
+                </dd:Version>
+                <job:JobID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</job:JobID>
+                <job:CreationDate>2014-08-28T00:44:25Z</job:CreationDate>
+                <!-- From HTTP Header for POST to Jobs -->
+                <job:JobName>name</job:JobName>
+                <job:Links>
+                  <job:Link method="GET"rel="status" uri="<printer_ address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/status"/>                  
+                </job:Links>
+              </job:Job>  
+  
+  /{jobId}:
+    displayName: Job Unique ID
+    description: A specific Job's root resource which encapsulates all job related information and resources.
+         
+    put:
+      securedBy: [basic]
+      is: [ "conflict": {action: "created", item: "job"}, "notImplemented": {action: "updated", item: "version"}, "unauthorized", "forbidden"]
+      description: Uploads a new Build Package version with a specification of what parts are to be modified from the previous version in the printer.  The printer will manage the job version (which is linked directly to the 3MF package being fabricated).  When a new build package is uploaded the client MUST provide a new version - incremented by one from the existing version based on a previous query of the version currenlty in the printer.  The version is encoded as a query parameter on the PUT request.  If the version submitted by the client is not one greater than the current version in the printer, the printer will respond with HTTP 409 (resource conflict).  If the updated build is NOT processable by the printer, then errors will be reported in the /status resource. 
+      
+      headers:
+        queryParameters:
+          displayName: version
+          type: string
+          description: New Job Version
+          required: true
+      
+      body:
+          multipart/form-data:
+            formParameters:
+              file:
+                description: Updated build package
+                type: file
+                required: true
+                
+      responses:
+        202:
+          description: Successfully uploaded a new Build Package and part additions and removal body.  The package has been accepted and is ready to be processed.  Return payload will contain incremented version number.
+          body:
+            text/xml:  
+              schema: |
+              example: | 
+
+    get:
+      securedBy: [basic]
+      is: [ "unauthorized", "forbidden", "notFound": {item: "job"}]
+      description: GET Job Information
+      responses:
+        200:
+          description: <b>OK</b>
+          body:
+            text/xml:
+              schema: |
+              example: | 
+                <?xml version="1.0" encoding="UTF-8"?>
+                <job:Job xsi:schemaLocation="http://www.hp.com/schemas/piws/2015/06/09 PIWS.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:job="http://www.hp.com/schemas/job/2015/06/09" xmlns:dd="http://www.hp.com/schemas/dictionary/2015/06/09">
+                  <dd:Version>
+                    <dd:Revision>1.0.0.0</dd:Revision>
+                  </dd:Version>
+                <job:JobID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</job:JobID>
+                <job:CreationDate>2014-08-28T00:44:25Z</job:CreationDate>
+                <!-- From HTTP Header for POST to Jobs -->
+                <job:JobName>name</job:JobName>
+                <!-- From 3MF <build> element uuid -->
+                <job:BuildPackageID>uuid</job:BuildPackageID>
+                <job:BuildPackageVersion>1</job:BuildPackageVersion>
+                <job:Links>
+                  <job:Link method="GET"rel="status" uri="<printer_ address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/status"/>
+                  <job:Link method="GET"rel="parts" uri="<printer_ address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/parts"/>
+                  <job:Link method="PUT" rel="version" uri="<printer_ address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/version"/>
+                  <job:Link method="GET" rel="assemblies" uri="<printer_ address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/assemblies"/>
+                  <job:Link method="GET" rel="history" uri="<printer_ address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/history"/>  
+                  <job:Link method="GET" rel="control" uri="<printer_ address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/control"/>  
+                </job:Links>
+                </job:Job>  
+  
+    /parts:
+      displayName: 
+        Job Parts
+      description:
+        The Parts resource encapsulates all Parts within a given Job.  
+      get:
+        securedBy: [basic]
+        is: [ "unauthorized", "forbidden", "notFound": {item: "parts"} ]
+        description: Retrieve a list of parts in the specified Job.  Each part is addressable individually from the links provided in the response payload.
+        responses:
+          200:
+            description: <b>OK</b>. 
+            body:
+              text/xml:
+                schema: |
+                example: |
+                  <?xml version="1.0" encoding="UTF-8" ?>
+                  <parts:parts xsi:schemaLocation="http://www.hp.com/schemas/piws/2015/06/09 PIWS.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:parts="http://www.hp.com/schemas/parts/2015/06/09" xmlns:dd="http://www.hp.com/schemas/dictionary/2015/06/09">
+                      <dd:Version>
+                          <dd:Revision>1.0.0.0</dd:Revision>
+                      </dd:Version>
+                    <parts:JobID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</parts:JobID>
+                    <parts:Part>
+                      <parts:Part_ID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</parts:Part_ID>
+                      <parts:Links>
+                        <parts:Link method="GET" uri="<printer address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/parts/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+                      </parts:Links>
+                    </parts:Part>
+                    <parts:Part>
+                      <parts:Part_ID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</parts:Part_ID>
+                      <parts:Links>
+                        <parts:Link method="GET" uri="<printer address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/parts/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+                      </parts:Links>
+                    </parts:Part>
+                    <parts:Part>
+                      <parts:Part_ID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</parts:Part_ID>
+                      <parts:Links>
+                        <parts:Link method="GET" uri="<printer address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/parts/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+                      </parts:Links>
+                    </parts:Part>
+                  </parts:parts>                  
+
+      /{partId}:
+        displayName: 
+          Part ID
+        description:
+          The part resource encapsulates all information about individual part instances in the build package.  
+        get:
+          securedBy: [basic]
+          is: [ "unauthorized", "forbidden","notFound": {item: "part"}]
+          description: Retrieves individual Part information.
+          responses:
+            200:
+              description: <b>OK</b>
+              body:
+                text/xml:
+                  schema: |
+                  example: | 
+                    <?xml version="1.0" encoding="UTF-8" ?>
+                    <part:part xsi:schemaLocation="http://www.hp.com/schemas/piws/2015/06/09 PIWS.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:part="http://www.hp.com/schemas/parts/2015/06/09" xmlns:dd="http://www.hp.com/schemas/dictionary/2015/06/09">
+                      <dd:Version>
+                        <dd:Revision>1.0.0.0</dd:Revision>
+                      </dd:Version>
+                      <!-- Part_ID: From 3MF <build>/<item>/"partnumber" IF there is no Assembly ("components").  If the object is made up of components, then the unique Part_ID MUST come from <resources>/<object>/<components>/<component>/"partnumber".  The ID may or may not be in the form of a uuid, but it only has to be unique within the 3MF package. -->
+                      <part:Part_ID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</part:Part_ID>
+                      <part:JobID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</part:JobID>
+                      <!-- Assembly_ID: From 3MF <resources>/<object>/"objectid" IF the object is comprised of components.  The Assembly_ID may be a uuid or other unique identifier within the package.   -->
+                      <part:Assembly_ID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</part:Assembly_ID>
+                      <!-- Model_ID: From 3MF <build>/<item>/"objectid" IF there is no Assembly ("components").  If the object is made up of components, then the unique Part_ID MUST come from <resources>/<object>/<components>/<component>/"objectid".  The ID may or may not be in the form of a uuid, but it only has to be unique within the 3MF package. -->
+                      <part:Model_ID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</part:Model_ID>\
+                      <!-- From 3MF <build>/<item>/"name". -->
+                      <part:Name>name</part:Name>
+                      <part:Links>
+                        <part:Link method="GET" rel="status" uri="<printer address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/parts/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/status"/>
+                        <part:Link method="GET" rel="thumbnail" uri="<printer address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/parts/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/thumbnail"/>
+                      </part:Links>
+                    </part:part>                      
+
+        /status:
+          displayName: Part Status
+          description:
+            Describes   
+          get:
+            securedBy: [basic]
+            is: [ "unauthorized", "forbidden", "notFound": {item: "status"}  ]
+            description: Retrieve list of ACTIVE jobs in the printer.  Active jobs are all jobs currently in job storage regardless of status.  the Jobs resource doen not have access jobs that have been moved to Job History.
+            responses:
+              200:
+                description: <b>OK</b>. 
+                body:
+                  text/xml:
+                    schema: |
+                    example: |
+                      <?xml version="1.0" encoding="UTF-8" ?>
+                      <partstatus:PartStatus xsi:schemaLocation="http://www.hp.com/partstatus ../Schemas/PartStatus.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:partstatus="http://www.hp.com/partstatus">
+                        <!--THIS DATA IS SUBJECT TO DISCLAIMER(S) INCLUDED WITH THE PRODUCT OF ORIGIN.-->
+                        <partstatus:UserReported>
+                          <partstatus:Status>
+                            <partstatus:TopLevel>
+                              <partstatus:Message>PRINTING</partstatus:Message>
+                              <!--
+                                Part Status Enumeration:
+                                PART_WAITING_TO_PROCESS
+                                PART_PROCESSING
+                                PART_PROCESSED
+                                PART_WAITING_TO_PRINT
+                                PART_PRINTING
+                                PART_COMPLETED
+                                PART_ERROR
+                                PART_CANCELLED
+                              -->
+                            </partstatus:TopLevel>
+                            <partstatus:Progress>
+                              <partstatus:PercentageComplete>100</partstatus:PercentageComplete>
+                            </partstatus:Progress>		
+                          <partstatus:Status>
+                          </partstatus:CompletionStatus>
+                            <partstatus:TopLevel>
+                              <partstatus:Message>COMPLETION_STATUS_SUCCESS</partstatus:Message>
+                                <!--
+                                  Part CompletionStatus Enumeration:
+                                  COMPLETION_STATUS_SUCCESS
+                                  COMPLETION_STATUS_WARNING
+                                  COMPLETION_STATUS_CANCELLED	
+                                  COMPLETION_STATUS_PROCESSING_ERROR
+                                  COMPLETION_STATUS_PRINTING_ERROR
+                                -->
+                              </partstatus:TopLevel>
+                          </partstatus:CompletionStatus>
+                        </partstatus:UserReported>
+                      </partstatus:PartStatus>  
+        /thumbnail:
+          description: The build has a resource that is a thubnail for each part (optional)
+          is: ["notFound": {item: "part"}]
+          get:
+            is: ["notFound": {item: "thumbnail"}]
+            securedBy: [basic]
+            description: Returns the thubnail of that specific part.
+  
+    /assemblies:
+      displayName: Assemblies
+      description:
+        Assemblies are logical groupings of parts within a build package which are bound to a common assembly-defined origin.  
+      get:
+        securedBy: [basic]
+        is: [ "unauthorized", "forbidden", "notFound": {item: "assemblies"}]
+        description: Retrieve a list of Assemblies in the current Build Package
+        responses:
+          200:
+            description: Returns a list of Assemblies in the current Build Package
+            body:
+              text/xml:
+                  schema: |
+                  example: |
+                    <?xml version="1.0" encoding="UTF-8" ?>
+                    <assemblies:Assemblies xsi:schemaLocation="http://www.hp.com/schemas/piws/2015/06/09 PIWS.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:assemblies="http://www.hp.com/schemas/jobs/2015/06/09" xmlns:dd="http://www.hp.com/schemas/dictionary/2015/06/09">
+                        <dd:Version>
+                            <dd:Revision>1.0.0.0</dd:Revision>
+                        </dd:Version>
+                      <!-- Assembly_ID: From 3MF <resources>/<object>/"objectid" IF the object is comprised of components.  The Assembly_ID may be a uuid or other unique identifier within the package. -->
+                      <assemblies:Assembly>
+                        <assemblies:Assembly_ID>xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx</assemblies:Assembly_ID>
+                        <assemblies:Links>
+                          <assemblies:Link method="GET" uri="<printer address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/assemblies/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+                        </assemblies:Links>
+                      </assemblies:Assembly>
+                    </assemblies:Assemblies>    
+        
+      /{assemblyId}:
+        /parts:
+          description: An assembly is a logical collection of parts in a 3MF package.  The /parts resource of an assembly returns a list of part links for all parts included in the assembly.  
+          is: ["notFound": {item: "assembly"}, "unauthorized", "forbidden"]
+          get:
+            securedBy: [basic]
+            description: Returns the list of parts contained in that specific Assembly. The access to different information about a part is throught /build/part/{partId}
+            responses:
+              200:
+                description: returns one of the possible job status
+                body:
+                  text/xml:
+                      schema: |
+                      example: |    
+    /versions:
+      description: The Versions returns a list of the versions of the specified job id.                  
+      get:
+        securedBy: [basic]
+        is: [ "unauthorized", "forbidden" ]
+        description: job status. It incudes from any error produced during the 3MF parser process until the job has been printed.
+        responses:
+          200:
+            description: returns one of the possible job status
+            body:
+              text/xml:
+                  schema: |
+                  example: |  
+
+    /status:
+      is: ["notFound": {item: "job"}, "unauthorized", "forbidden"]
+      get:
+        securedBy: [basic]
+        is: [ "unauthorized", "forbidden" ]
+        description: job status. It incudes from any error produced during the 3MF parser process until the job has been printed.
+        responses:
+          200:
+            description: returns one of the possible job status
+            body:
+              text/xml:
+                  schema: |
+                  example: |
+                    <?xml version="1.0" encoding="UTF-8" ?>
+                    <jobstatus:JobStatus xsi:schemaLocation="http://www.hp.com/jobstatus ../Schemas/JobStatus.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jobstatus="http://www.hp.com/jobstatus">
+                      <!--THIS DATA IS SUBJECT TO DISCLAIMER(S) INCLUDED WITH THE PRODUCT OF ORIGIN.-->
+                      <jobstatus:UserReported>
+                        <jobstatus:EstimatedJobRemainingTime unit="seconds">10000</jobstatus:EstimatedJobRemainingTime>
+                        <jobstatus:Status>
+                          <jobstatus:TopLevel>
+                            <jobstatus:Message>PRINTING</jobstatus:Message>
+                            <!-- 
+                              JobStatus Enumeration:
+                              BUILD_WAITING_TO_PROCESS
+                              BUILD_PROCESSING
+                              BUILD_PROCESSED
+                              BUILD_CHECKING
+                              TROLLEY_NOT_PRESENT
+                              TROLLEY_ERROR
+                              BED_ERROR
+                              BED_EMPTY
+                              BUILD_OUTSIDE_PHYSICAL_BED
+                              BUILD_MATERIAL_MISMATCH
+                              BUILD_STARTING
+                              BUILD_PROCESSING
+                              BUILD_WARMING_UP
+                              BUILD_PRINTING
+                              BUILD_SAFETY_COOLING
+                              BUILD_ACTIVE_COOLING
+                              BUILD_RETRIEVAL
+                              BUILD_COMPLETING
+                              BUILD_COMPLETED
+                              BUILD_ERROR
+                            -->
+                          </jobstatus:TopLevel>
+                          <jobstatus:Progress>
+                            <!-- 
+                              Progress for CURRENT STATUS
+                            -->
+                            <jobstatus:PercentageComplete>76</jobstatus:PercentageComplete>
+                            <jobstatus:RemainingTime unit="seconds">7600</jobstatus:RemainingTime>
+                            <!-- 
+                              For BUILD_PRINTING ONLY
+                              Will be empty for other states 	
+                            -->
+                            <jobstatus:PrintingTotalJobLayers>4000</jobstatus:PrintingTotalJobLayers>
+                            <!-- 
+                              For BUILD_PRINTING ONLY
+                              Will be empty for other states 	
+                            -->
+                            <jobstatus:PrintingCurrentJobLayer>3050</jobstatus:PrintingCurrentJobLayer>
+                            <!-- 
+                              For BUILD_PRINTING ONLY
+                              Will be empty for other states 	
+                            -->
+                            <jobstatus:PrintingCurrentJobLayerImage>
+                              <jobstatus:Links>
+                                <jobstatus:Link method="GET" uri="<printer address:port>/HP-MJF/PI/jobs/xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx/currentlayer.png"/>
+                              </jobstatus:Links>
+                            </jobstatus:PrintingCurrentJobLayerImage>
+                          </jobstatus:Progress>		
+                        </jobstatus:Status>
+                        <jobstatus:CompletionStatus>
+                          <jobstatus:TopLevel>
+                            <jobstatus:Message></jobstatus:Message>
+                              <!--
+                                Part CompletionStatus Enumeration:
+                                COMPLETION_STATUS_SUCCESS
+                                COMPLETION_STATUS_WARNING
+                                COMPLETION_STATUS_CANCELLED
+                                COMPLETION_STATUS_PROCESSING_ERROR
+                                COMPLETION_STATUS_PRINTING_ERROR -->
+                          </jobstatus:TopLevel>
+                        </jobstatus:CompletionStatus>
+                      </jobstatus:UserReported>
+                    </jobstatus:JobStatus>
+  
+#    /jobticket:
+#     description: 
+#      get:
+#       securedBy: [basic]
+#        is: [ "unauthorized", "forbidden" ]
+#        responses:
+#         200:
+#           body:
+#             text/xml:
+#               example: |
+#
+#      put:
+#        securedBy: [basic]
+#       description: Add aditional metadata
+#       is: ["notFound": {item: "job"}, "success", "unauthorized", "forbidden"]
+#       body:
+#         application/json:
+#           example: |
+#             { "username" : "John" }
+              
+    /history:
+        description: Job History provides 
+        get:
+          securedBy: [basic]  
+          is: [ "unauthorized", "forbidden" ]
+
+    /control:
+      /pause:
+        is: ["notFound": {item: "job"}, "unauthorized", "forbidden", notImplemented:{item: "job", action: "pause"}]
+        post:
+          securedBy: [basic]
+          responses:
+            202:
+              description: Job has been paused.
+              body:          
+             
+      /resume:
+        is: ["notFound": {item: "job"}, "unauthorized", "forbidden", notImplemented:{item: "job", action: "resume"}]
+        post:
+          securedBy: [basic]
+          responses:
+            202:
+              description: Job has been resumed.
+              body:          
+      /restart:
+        is: ["notFound": {item: "job"}, "unauthorized", "forbidden", notImplemented:{item: "job", action: "cancel"}]
+        post:
+          securedBy: [basic]
+          responses:
+            202:
+              description: Job has been canceled.
+              body:          
+  
+      /cancel:
+        is: ["notFound": {item: "job"}, "unauthorized", "forbidden", notImplemented:{item: "job", action: "cancel"}]
+        post:
+          securedBy: [basic]
+          responses:
+            202:
+              description: Job has been canceled.
+              body:          
+
+#    /build:
+#      description:
+#       A Build represents the content of a given job as bounded by the physical dimensions of the platform.  The physical #dimensions of the platform are inherent in the printer being printed to, and the 0, 0, 0 origin of the platform (for positioning #purposes) is ALWAYS assumed to be in the LOWER, LEFT, BACK corner when looking at the platform from the front of the printer. The #Build is described in an XML file as a set of references to models. Each model instance is defined as a part and it will have a #unique PartID.
+#      /{versionNumber}:
+#        put:
+#          is: ["conflict": {action: "deleted/replaced", item: "part", }, "notFound": {item: "build version"}, "unauthorized", #"forbidden" ]
+#          securedBy: [basic]
+#          description: This method lets client sw to remove/add/replace parts into a buils. Updates the build with "delta" package #files. This new delta package file is based on a previous build "state". This means, for each PUT (and for the first POST of a #package file) the printern returns a version number of the build. This version must be used when uptating the build. If the #version does not correspond with the current build version, an error (404, resource not found) is returned and no update is #performed.
+#          body:
+#              multipart/form-data:
+#                formParameters:
+#                  operations:
+#                    description: json string containing which operation to perform for each part in the build that is uploaded.
+#                    type: string
+#                    required: true
+#                    example: "[ {partid: 3453-443, op:ADD}, {partid: 435-45, op:REMOVE} ]" 
+#                  file:
+#                    description: 3MF file containing the build and all parts and models to be printed
+#                    type: file
+#                    required: true
+#          responses:
+#            202:
+#              description: 3MF file <b>successfully uploaded</b>. This means the transmition and container consistency is correct. #Now the printer is processing the 3MF container and creates the different resources included. Using the status method you get #additional success/errors during the 3MF parsing and processing.
+#              body:
+#                application/json:  
+#                  schema: |
+#                    {
+#                      "$schema": "http://json-schema.org/draft-04/schema#",
+#                      "title": "Job submited",
+#                      "description": "information generated once the job has been created",
+#                      "type": "object",
+#                      "properties": {
+#                        "jobId": {  },
+#                        "URIstatus" : { }
+#                      }
+#                    }
+#                  example: | 
+#                    { "jobId":"234-443-22-115", 
+#                      "URIstatus": {
+#                         "@rel" : "/linkrels/job/status",
+#                         "@uri" :"/jobs/234-443-22-115/status"
+#                       }
+#                    }
+#      /version:
+#        is: ["notFound": {item: "build"}]
+#        get:
+#          securedBy: [basic]
+#          description: Returns current build version for a specific job
+#      /ticket:
+#        is: ["notFound": {item: "build"}]
+#        description: The build ticket indicates the 2D sliced models that are to be included in the build.
+#        get:
+#          securedBy: [basic]
+#          is: [ "unauthorized", "forbidden" ]
+#          description: returns the xml build ticket.
+#      /entities:
+#        description: A build is made up of different entities. An entitie can be a  part alone or groups (or individual) of part #under a logical  assembly or under a phisical cage.
+#        get:
+#          securedBy: [basic]
+#          description: Returns the list of entities contained in that specific job and build. The reuslt is a list of uri to the #different entities, like /part/{partId} and/or /assembly/{assemblyId} and/or  /cage/{cageId}
+#      /progress:
+#        is: ["notFound": {item: "job"}, "unauthorized", "forbidden"]
+#        get:
+#          securedBy: [basic]
+#          description: job printing progress information.
+#          responses:
+#            200:
+#              description: returns one of the possible job status
+#              body:
+#                application/json:
+#                  schema: |
+#                    {
+#                      "$schema": "http://json-schema.org/draft-04/schema#",
+#                      "title": "Job progress",
+#                      "description": "job printing progress",
+#                      "type": "object",
+#                     "properties": {
+#                        "percentage": {
+#                          "type": "integer",
+#                          "minimum": 0,
+#                          "maximum": 100
+#                        },
+#                        "currentPrintingSlice" : {  
+#                          "type": "integer",
+#                          "minimum": 0
+#                        }
+#                      }
+#                    }
+#      /history:
+#          description: list build version number with the build ticked associated to each.
+#          get:
+#            securedBy: [basic]  
+#            is: [ "unauthorized", "forbidden" ]
+#      /control:
+#        /pause:
+#          is: ["notFound": {item: "job"}, "unauthorized", "forbidden"]
+#          post:
+#            securedBy: [basic]
+#        /resume:
+#          is: ["notFound": {item: "job"}]
+#          post:
+#            securedBy: [basic]
+#        /cancel:
+#          is: ["notFound": {item: "job"}]
+#          post:                    
+#            securedBy: [basic]
+#      /cage:
+#        /{cageId}:
+#         /parts:
+#            description: Cage is a phisical group of parts.
+#            get:
+#             securedBy: [basic]
+#             description: Returns the list of parts contained in that #specific cage. The access to different information about a part is #hrought /build/part/{partId}
+#          /progress:
+#         /status:
+
+    
+
+#/models:
+#  description: 
+#  post:
+#    securedBy: [basic]
+#   description: add a new model into the printer
+#   body:
+#     multipart/form-data:
+#        formParameters:
+#          file:
+#            description: 3MF ????? file containing the model
+#           type: file
+#            required: true
+#   responses:
+#      202:
+#       description: 3MF file <b>successfully uploaded</b>. This means the transmition and container consistency is correct. Now the printer is processing the 3MF container and creates #he with all data included. Using the status method you get additional success/errors during the 3MF parsing and processing.
+#        body:
+#         application/json:  
+#           example: | 
+#             { "modelId":"234-443-22-115",
+#               "URIstatus": {
+#                  "@rel" : "/linkrels/model/status",
+#                  "@uri" : "/nodels/234-443-22-115/status"
+#               }
+#             }
+# /{modelId}:
+#   /status:
+#     get:
+#       securedBy: [basic]
+#        is: [ "unauthorized", "forbidden" ]
+#   /ticket:
+#     get:
+#    /2Dsliced:
+#     get:
+      
+    

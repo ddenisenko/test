@@ -1,0 +1,310 @@
+#%RAML 0.8
+title: Doorman API
+version: v1
+baseUri: https://apdm-internal.local/
+securitySchemes:
+  - apdmToken:
+      description: |
+        Token based security scheme
+      type: x-apdm-token
+      describedBy:
+        headers:
+          x-apdm-userid:
+            description: GUID of the user
+          x-apdm-usertoken:
+            description: Access token
+/login:
+  post:
+    description: Consumer Facade compatible login API
+    body:
+      application/json:
+        example: |
+          {
+            "loginInfo": {
+              "password": "Password1!",
+              "userName": "qowpu"
+            },
+            "riskData": {
+              "authData": "some-encoded-string",
+              "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+            }
+          }
+    responses:
+      200:
+        description: | 
+          Successfully processed request. Please check if successfully logged in.
+          Possible errors: 
+          (1) EC_UAC_A_1018 - bad request
+          (2) EC_A_0013 - invalid credentials
+          (3) CMN_LE_1000 - unverified email
+          (4) Others? TBD
+        body:
+          application/json:
+            schema: |
+              {
+                "type": "object",
+                "title": "Login Response",
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "description": "A login response object",
+                "properties": {
+                  "isSuccess": { "type": "boolean" },
+                  "risky": { "type": "boolean" },
+                  "token": { "type": "string" },
+                  "user": {
+                    "type": "object",
+                    "properties": {
+                      "email": { "type": "string" },
+                      "firstName": {"type": "string"},
+                      "lastName": { "type": "string" },
+                      "phoneNumber": { "type": [ "string", "null" ] },
+                      "userId": { "type": "string" }
+                    },
+                    "required": [ "email", "firstName", "lastName", "phoneNumber", "userId" ]
+                  },
+                  "errorInfo": {
+                    "type": "object",
+                    "properties": {
+                      "errorId": { "type": "string", "enum": [ "EC_UAC_A_1018", "EC_A_0013" ] },
+                      "errorDescription": { "type": "string" }
+                    },
+                    "required": [ "errorId", "errorDescription" ]
+                  },
+                  "userId": { "type": [ "string", "null" ] },
+                  "loginId": { "type": [ "string", "null" ] },
+                  "mfaEventId": { "type": [ "string", "null" ] },
+                  "credentials": { "type": [ "string", "null" ] }
+                },
+                "required": [ "isSuccess" ]
+              }
+            example: |
+              // success
+              {
+                "isSuccess": true,
+                "risky": false,
+                "token": "QVFJQzV3TTJMWTRTZmN4bTFCZmhuVnJzaEtxRV9Zcm5QRDFseDFKT2lrQ05rT00uKkFBSlRTUUFDTURJQUFsTkxBQWs1T1Rrek1EQTBOak1BQWxNeEFBSXdNUS4uKg",
+                "user": {
+                  "email": "blahblah129@mailinator.com",
+                  "firstName": "TestFirst",
+                  "lastName": "TestLast",
+                  "phoneNumber": null,
+                  "userId": "DD078004-BDCF-45C0-BC63-B1AC6BBE9E23"
+                }
+              }
+              // error
+              {
+                "errorInfo": {
+                  "errorId": "EC_UAC_A_1018",
+                  "errorDescription": "Bad Request"
+                },
+                "isSuccess": false,
+                "userId": null,
+                "loginId": null,
+                "mfaEventId": null,
+                "credentials": null
+              }
+      400:
+        description: EC_C_0000 - contact support
+      401:
+        description: EC_A_0011 - account locked
+      500:
+        description: Something bad happened
+/provider/login:
+  post:
+    description: Backward compatible Login API for Providers
+    body:
+      application/xml:
+        example: |
+          <login>
+            <user_name>provider_username</user_name>
+            <password>Password1!</password>
+          </login>
+    responses:
+      200:
+        description: |
+          Successfully processed request. Please check if successfully logged in.
+          Possible errors: 
+          (1) EC_UAC_A_1018 - bad request
+          (2) CMN_LE_1000 - unverified email
+          (3) Others? TBD
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <login>
+                <user_id>8899B8AE-5AAF-47F5-ABC5-F0BD98B1E963</user_id>
+                <token>the-token</token>
+                <last_login>2014-05-09T09:41:32+10:00</last_login>
+                <failure_count>0</failure_count>
+                <password_expiration_days>-248</password_expiration_days>
+              </login>
+      401:
+        description: There were problems with the supplied credentials. Please check the response body's error code. (1) EC_A_0011 - This account is locked/inactive. Please contact us on 13 62 45. (2) EC_A_0013 - invalid credentials
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <errorInfo>
+                <errorCode>EC_A_0013</errorCode>
+                <errorDescription>Please check your username and / or password.</errorDescription>
+              </errorInfo>
+/services/public/login:
+  # todo - WL
+  post:
+    description: Backward compatible Login API for Admins
+/login2fa:
+  # todo - WL & RP
+  post:
+    description: Checks the risk profile of an authenticated user and if risky, challenges the user to complete 2nd factor authentication.
+    securedBy: [apdmToken]
+    body:
+      application/json:
+        example: |
+          {
+            "riskData": {
+              "authData": "some-encoded-string",
+              "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+            }
+          }
+    responses:
+      200:
+        description: d
+        body:
+          application/json:
+            example: |
+              {
+                "devices": []
+              }
+      401:
+        description: The supplied token is invalid
+        headers:
+          www-authenticate:
+            description: You need to create a new token
+            required: true
+/validateOtp:
+  # todo - WL & RP
+/logout:
+  post:
+    description: Consumer Facade compatible logout API
+    securedBy: [apdmToken]
+    headers:
+      X-APDM-API-Version:
+        displayName: API version
+        description: The API version to use (will be set to 2.0 - facade)
+        required: true
+    responses:
+      200:
+        description: Successfully logged out
+      401:
+        description: You don't have permission to log out
+/tokens:
+  displayName: TOKENS
+  post:
+    description: Create a token for the user
+    body:
+      application/json:
+        example: |
+          {
+            "loginInfo": {
+              "password": "Password1!",
+              "userName": "qowpu"
+            },
+            "riskData": {
+              "authData": "some-encoded-string",
+              "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+            }
+          }
+    responses:
+      201:
+        description: Successfully logged in
+        headers:
+          location: 
+            description: The token resource created by this operation
+            required: true
+          link:
+            example: '<https://api.auspost.com.au/two-factor/>; rel="two-factor", <https://api.auspost.com.au/step-up/; rel="step-up'
+            required: false
+        body:
+          application/json:
+            example: |
+              {
+                "isSuccess": true,
+                "risky": false,
+                "token": "QVFJQzV3TTJMWTRTZmN4bTFCZmhuVnJzaEtxRV9Zcm5QRDFseDFKT2lrQ05rT00uKkFBSlRTUUFDTURJQUFsTkxBQWs1T1Rrek1EQTBOak1BQWxNeEFBSXdNUS4uKg",
+                "user": {
+                  "email": "blahblah129@mailinator.com",
+                  "firstName": "TestFirst",
+                  "lastName": "TestLast",
+                  "phoneNumber": null,
+                  "userId": "DD078004-BDCF-45C0-BC63-B1AC6BBE9E23"
+                }
+              }
+      400:
+        description: The request is malformed.
+      401:
+        description: The credentials provided are incorrect or the account is locked.  Check the error body.
+      500:
+        description: Something went wrong on the server
+  /{token}:
+    get:
+      description: Check that the token is still valid and optionally check authorisation
+      securedBy: [apdmToken]
+      queryParameters:
+        detail:
+          description: The amount of information to retrieve
+          enum: [min, full]
+          default: min
+          required: false
+        requested-url: 
+          description: The URL encoded endpoint to check authorisation for
+          type: string
+          required: false
+          example: DELETE%20https%3A//api.auspost.com.au/tokens/12345
+      responses:        
+        200:
+          description: The token is valid
+          body:
+            application/json:
+              example: |
+                {
+                  "isSuccess": true,
+                  "risky": false,
+                  "is_multi_factor": true,
+                  "token": "the_token",
+                  "user": {
+                    "email": "blahblah129@mailinator.com",
+                    "firstName": "TestFirst",
+                    "lastName": "TestLast",
+                    "apcn": "apcn1234",
+                    "phoneNumber": null,
+                    "userId": "DD078004-BDCF-45C0-BC63-B1AC6BBE9E23"
+                  }
+                }
+        401:
+          description: The token provided doesn't have a valid session
+          headers:
+            www-authenticate:
+              description: You need to create a new token
+              required: true
+        403:
+          description: The bearer of the token does not have access to the specified requested-url
+          headers:
+            link:
+              description: Links to perform the necessary authorisation
+              example: '<https://api.auspost.com.au/two-factor/>; rel="two-factor", <https://api.auspost.com.au/step-up/; rel="step-up'
+          body:
+            application/json:
+              example: |
+                {
+                  "error_code": "TBD",
+                  "error_description": "MFA is required"
+                }
+        404:
+          description: The token is invalid or you don't have permission to read it
+    delete:
+      description: Delete the token to invalidate it
+      securedBy: [apdmToken]
+      responses:
+        200:
+          description: The token has been deleted and is no longer valid
+        404:
+          description: The token is invalid or you don't have permission to delete it
